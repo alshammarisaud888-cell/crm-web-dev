@@ -1,0 +1,8 @@
+Recommended Azure App Service settings
+
+APP_ENV=azure
+CRM_PERSIST_ROOT=/home/crm
+SCM_DO_BUILD_DURING_DEPLOYMENT=true
+
+Startup Command:
+bash startup.sh
