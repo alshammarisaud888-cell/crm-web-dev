@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRM Web | Dashboard</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #f4f8f7;
+            color: #183b35;
+        }
+
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: #0f4b42;
+            color: white;
+            padding: 26px 18px;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+        }
+
+        .brand {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 12px;
+            color: #b9d5cf;
+            margin-bottom: 32px;
+        }
+
+        .nav-item {
+            display: block;
+            padding: 13px 15px;
+            margin-bottom: 7px;
+            border-radius: 8px;
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: #1c6b5c;
+        }
+
+        .main {
+            margin-left: 250px;
+            width: calc(100% - 250px);
+        }
+
+        .topbar {
+            height: 70px;
+            background: white;
+            border-bottom: 1px solid #dce8e4;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .top-title {
+            font-size: 17px;
+            font-weight: 700;
+        }
+
+        .top-actions {
+            display: flex;
+            gap: 20px;
+            font-size: 14px;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .page-title {
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+
+        .page-description {
+            color: #708680;
+            margin-bottom: 28px;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+            margin-bottom: 25px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 14px;
+            padding: 22px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            border: 1px solid #e4ece9;
+        }
+
+        .card-label {
+            color: #71847f;
+            font-size: 13px;
+            margin-bottom: 12px;
+        }
+
+        .card-value {
+            font-size: 26px;
+            font-weight: 700;
+            color: #0f4b42;
+        }
+
+        .card-note {
+            font-size: 12px;
+            color: #8ca09a;
+            margin-top: 8px;
+        }
+
+        .section-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 14px;
+            border: 1px solid #e4ece9;
+            padding: 22px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        }
+
+        .panel-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 18px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 12px;
+            background: #e9f2ef;
+            font-size: 13px;
+        }
+
+        td {
+            padding: 13px 12px;
+            border-bottom: 1px solid #edf2f0;
+            font-size: 13px;
+        }
+
+        .badge {
+            padding: 5px 9px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .qualification {
+            background: #fff4d8;
+            color: #8a6500;
+        }
+
+        .proposal {
+            background: #e5f0ff;
+            color: #1e5ca8;
+        }
+
+        .awarded {
+            background: #e4f6ec;
+            color: #17623d;
+        }
+
+        .metric {
+            padding: 15px 0;
+            border-bottom: 1px solid #edf2f0;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .metric:last-child {
+            border-bottom: none;
+        }
+
+        .metric-label {
+            color: #708680;
+        }
+
+        .metric-value {
+            font-weight: 700;
+        }
+
+        @media (max-width: 1000px) {
+            .cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .section-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="layout">
+
+    <aside class="sidebar">
+        <div class="brand">CRM Web</div>
+        <div class="subtitle">Customer Relationship Management</div>
+
+        <a href="#" class="nav-item active">Dashboard</a>
+        <a href="#" class="nav-item">Accounts</a>
+        <a href="#" class="nav-item">Customer Contacts</a>
+        <a href="#" class="nav-item">Leads</a>
+        <a href="#" class="nav-item">Opportunities</a>
+        <a href="#" class="nav-item">Quotations</a>
+        <a href="#" class="nav-item">Pipeline Analytics</a>
+        <a href="#" class="nav-item">Reports</a>
+    </aside>
+
+    <main class="main">
+
+        <header class="topbar">
+            <div class="top-title">CRM Web</div>
+
+            <div class="top-actions">
+                <span>Inbox 0</span>
+                <span>Notifications 0</span>
+                <span>Owners</span>
+            </div>
+        </header>
+
+        <section class="content">
+
+            <h1 class="page-title">Dashboard</h1>
+            <p class="page-description">
+                Sales pipeline, opportunities, quotations and business performance overview.
+            </p>
+
+            <div class="cards">
+
+                <div class="card">
+                    <div class="card-label">Accounts</div>
+                    <div class="card-value">0</div>
+                    <div class="card-note">Active customer accounts</div>
+                </div>
+
+                <div class="card">
+                    <div class="card-label">Open Opportunities</div>
+                    <div class="card-value">0</div>
+                    <div class="card-note">Current sales opportunities</div>
+                </div>
+
+                <div class="card">
+                    <div class="card-label">Pipeline Value</div>
+                    <div class="card-value">SAR 0</div>
+                    <div class="card-note">Total open pipeline</div>
+                </div>
+
+                <div class="card">
+                    <div class="card-label">Open Quotations</div>
+                    <div class="card-value">0</div>
+                    <div class="card-note">Quotation requests in progress</div>
+                </div>
+
+            </div>
+
+            <div class="section-grid">
+
+                <div class="panel">
+                    <div class="panel-title">Recent Opportunities</div>
+
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Opportunity ID</th>
+                            <th>Account</th>
+                            <th>Opportunity</th>
+                            <th>Stage</th>
+                            <th>Value</th>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+                        <tr>
+                            <td>OPP-00001</td>
+                            <td>Demo Account</td>
+                            <td>Sample Opportunity</td>
+                            <td>
+                                <span class="badge qualification">
+                                    Qualification
+                                </span>
+                            </td>
+                            <td>SAR 100,000</td>
+                        </tr>
+
+                        <tr>
+                            <td>OPP-00002</td>
+                            <td>Example Customer</td>
+                            <td>Demo Project</td>
+                            <td>
+                                <span class="badge proposal">
+                                    Proposal
+                                </span>
+                            </td>
+                            <td>SAR 250,000</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-title">Pipeline Snapshot</div>
+
+                    <div class="metric">
+                        <span class="metric-label">Qualification</span>
+                        <span class="metric-value">SAR 100,000</span>
+                    </div>
+
+                    <div class="metric">
+                        <span class="metric-label">Proposal</span>
+                        <span class="metric-value">SAR 250,000</span>
+                    </div>
+
+                    <div class="metric">
+                        <span class="metric-label">Awarded</span>
+                        <span class="metric-value">SAR 0</span>
+                    </div>
+
+                    <div class="metric">
+                        <span class="metric-label">Weighted Pipeline</span>
+                        <span class="metric-value">SAR 175,000</span>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+</body>
+</html>
