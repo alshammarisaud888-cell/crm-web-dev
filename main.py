@@ -1679,7 +1679,7 @@ class CRMApp:
                     border_radius=12,
                     padding=8,
                     content=ft.Image(
-                        src=str(LOGO_PATH),
+                        src_base64=LOGO_BASE64,
                         fit=ft.ImageFit.CONTAIN,
                     ),
                 ),
