@@ -1,5 +1,5 @@
 from __future__ import annotations
-
+import base64
 import csv
 import hashlib
 import hmac
@@ -55,6 +55,7 @@ else:
 DB_PATH = DATA_DIR / "saudi_sensing_crm.db"
 SEED_DB_PATH = APP_DIR / "seed_data" / "saudi_sensing_crm.db"
 LOGO_PATH = APP_DIR / "assets" / "saudi_sensing_logo.png"
+LOGO_BASE64 = base64.b64encode(LOGO_PATH.read_bytes()).decode("utf-8")
 REPORT_LOGO_PATH = APP_DIR / "assets" / "saudi_sensing_report_logo.png"
 VAT_RATE = 15.0
 
@@ -1390,7 +1391,7 @@ class CRMApp:
                         height=145,
                         alignment=ft.Alignment(0, 0),
                         content=ft.Image(
-                           src="/saudi_sensing_logo.png",
+                          src_base64=LOGO_BASE64,
                             fit=ft.ImageFit.CONTAIN,
                         ),
                     ),
