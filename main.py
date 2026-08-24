@@ -6,6 +6,10 @@ import hmac
 import os
 import shutil
 import sqlite3
+import re
+
+import psycopg
+from psycopg.rows import dict_row
 import tempfile
 from collections import Counter, defaultdict
 from datetime import date, datetime, timedelta
@@ -53,6 +57,68 @@ SEED_DB_PATH = APP_DIR / "seed_data" / "saudi_sensing_crm.db"
 LOGO_PATH = APP_DIR / "assets" / "saudi_sensing_logo.png"
 REPORT_LOGO_PATH = APP_DIR / "assets" / "saudi_sensing_report_logo.png"
 VAT_RATE = 15.0
+
+
+DATABASE_BACKEND = os.getenv("DATABASE_BACKEND", "sqlite").strip().lower()
+USE_POSTGRES = DATABASE_BACKEND in {"postgres", "postgresql"}
+
+
+def _postgres_sql(sql_text: str) -> str:
+    """Translate the small SQLite SQL subset used by this CRM to PostgreSQL."""
+    converted = sql_text.replace("?", "%s")
+    if re.search(r"\bINSERT\s+OR\s+IGNORE\b", converted, flags=re.IGNORECASE):
+        converted = re.sub(
+            r"\bINSERT\s+OR\s+IGNORE\b",
+            "INSERT",
+            converted,
+            flags=re.IGNORECASE,
+        )
+        stripped = converted.rstrip()
+        suffix = ";" if stripped.endswith(";") else ""
+        if suffix:
+            stripped = stripped[:-1].rstrip()
+        converted = stripped + " ON CONFLICT DO NOTHING" + suffix
+    return converted
+
+
+class PostgresCompatConnection:
+    """Tiny compatibility layer so the existing SQLite-style calls keep working."""
+    def __init__(self):
+        self._con = psycopg.connect(
+            host=os.environ["PGHOST"],
+            port=int(os.getenv("PGPORT", "5432")),
+            dbname=os.getenv("PGDATABASE", "postgres"),
+            user=os.environ["PGUSER"],
+            password=os.environ["PGPASSWORD"],
+            sslmode="require",
+            row_factory=dict_row,
+        )
+
+    def execute(self, statement, params=None):
+        return self._con.execute(
+            _postgres_sql(statement),
+            tuple(params) if params is not None else None,
+        )
+
+    def commit(self):
+        return self._con.commit()
+
+    def rollback(self):
+        return self._con.rollback()
+
+    def close(self):
+        return self._con.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc, tb):
+        if exc_type is None:
+            self._con.commit()
+        else:
+            self._con.rollback()
+        self._con.close()
+        return False
 
 
 def prepare_runtime_storage():
@@ -165,12 +231,28 @@ class Database:
         self.path.parent.mkdir(parents=True, exist_ok=True)
 
     def connect(self):
+        if USE_POSTGRES:
+            return PostgresCompatConnection()
+
         con = sqlite3.connect(self.path)
         con.row_factory = sqlite3.Row
         con.execute("PRAGMA foreign_keys = ON")
         return con
 
     def initialize(self):
+        if USE_POSTGRES:
+            # PostgreSQL schema/data are created by the one-time migration step.
+            with self.connect() as con:
+                row = con.execute(
+                    "SELECT COUNT(*) AS count FROM information_schema.tables "
+                    "WHERE table_schema='public' AND table_name='users'"
+                ).fetchone()
+                if not row or int(row["count"]) == 0:
+                    raise RuntimeError(
+                        "PostgreSQL schema is missing. Run migrate_sqlite_to_postgres.py first."
+                    )
+            return
+
         with self.connect() as con:
             con.executescript("""
             CREATE TABLE IF NOT EXISTS users (
@@ -456,7 +538,7 @@ class Database:
             self.initialize_sequences(con)
             self.ensure_default_owners(con)
 
-            if con.execute("SELECT COUNT(*) FROM users").fetchone()[0] == 0:
+            if con.execute("SELECT COUNT(*) AS count FROM users").fetchone()["count"] == 0:
                 con.execute(
                     """INSERT INTO users
                     (username,password_hash,full_name,role,active,created_at)
@@ -479,6 +561,17 @@ class Database:
         if table not in self.ALLOWED_EDIT_TABLES:
             raise ValueError("This table is not editable.")
         with self.connect() as con:
+            if USE_POSTGRES:
+                rows = con.execute(
+                    """
+                    SELECT column_name AS name
+                    FROM information_schema.columns
+                    WHERE table_schema='public' AND table_name=?
+                    ORDER BY ordinal_position
+                    """,
+                    (table,),
+                ).fetchall()
+                return [dict(row) for row in rows]
             return [dict(row) for row in con.execute(f"PRAGMA table_info({table})").fetchall()]
 
     def update_record(self, table, record_id, values):
@@ -670,7 +763,7 @@ class Database:
             ("OWN-00010", "Syed Imran", "Operation Head, Valves and Services", "Operations", 0),
         ]
 
-        existing_count = con.execute("SELECT COUNT(*) FROM owners").fetchone()[0]
+        existing_count = con.execute("SELECT COUNT(*) AS count FROM owners").fetchone()["count"]
         if existing_count == 0:
             for owner_code, full_name, role, department, quotation_flag in predefined_owners:
                 con.execute(
@@ -7140,6 +7233,7 @@ def main(page: ft.Page):
 
 
 if __name__ == "__main__":
+    print(f"CRM database backend: {DATABASE_BACKEND}")
     if WEB_MODE:
         ft.app(
             target=main,
