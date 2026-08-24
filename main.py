@@ -2359,7 +2359,12 @@ class CRMApp:
 
             document.build(story)
             self.notify(f"{title} PDF exported: {path.name}")
-            os.startfile(path)
+            if WEB_MODE:
+    download_path = APP_DIR / "assets" / path.name
+    shutil.copy2(path, download_path)
+    self.page.launch_url(f"/{path.name}")
+else:
+    os.startfile(path)
         except Exception as error:
             self.notify(f"Section PDF export failed: {error}", True)
 
