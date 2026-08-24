@@ -1390,7 +1390,7 @@ class CRMApp:
                         height=145,
                         alignment=ft.Alignment(0, 0),
                         content=ft.Image(
-                           src="saudi_sensing_logo.png",
+                           src="/saudi_sensing_logo.png",
                             fit=ft.ImageFit.CONTAIN,
                         ),
                     ),
