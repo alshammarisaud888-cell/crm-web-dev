@@ -3982,17 +3982,22 @@ class CRMApp:
             heading_row_color="#E5F0EC",
         )
 
+        active_request_rows = self.db.rows(
+            """SELECT DISTINCT opportunity_id
+               FROM quotations
+               WHERE opportunity_id IS NOT NULL
+                 AND status NOT IN ('WON','LOST','REJECTED','CANCELLED')"""
+        )
+        active_request_ids = {
+            row["opportunity_id"]
+            for row in active_request_rows
+            if row["opportunity_id"] is not None
+        }
+
         def build_rows(records):
             result = []
             for record in records:
-                active_request = self.db.one(
-                    """SELECT id FROM quotations
-                       WHERE opportunity_id=?
-                         AND status NOT IN ('WON','LOST','REJECTED','CANCELLED')
-                       ORDER BY id DESC LIMIT 1""",
-                    (record["id"],),
-                )
-                has_request = bool(active_request)
+                has_request = record["id"] in active_request_ids
 
                 opportunity_id = self.id_badge(
                     record["opportunity_reference"],
