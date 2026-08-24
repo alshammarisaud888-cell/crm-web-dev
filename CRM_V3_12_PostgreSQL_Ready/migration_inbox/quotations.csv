@@ -1,0 +1,2 @@
+﻿quotation_number,opportunity_reference,account_name,quotation_date,valid_until,base_value,discount,vat_rate,status,revision,owner,notes
+Q-0001,OPP-0001,Example Customer,2026-08-10,2026-11-08,950000,0,15,Draft,0,Sales Owner,
